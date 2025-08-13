@@ -1,152 +1,256 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = " Vox Seas Andrey Hub",
-   Icon = nil, -- ou assetId válido em string
+   Name = "Vox Seas Andrey Hub Versão Beta",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
    LoadingTitle = "Andrey Hub",
-   LoadingSubtitle = "Criado Por Andreyjr0250",
-   Theme = "Green",
-   ToggleUIKeybind = "K",
+   LoadingSubtitle = "Criado por Andreyjr0250",
+   ShowText = "Andrey Hub", -- for mobile users to unhide rayfield, change if you'd like
+   Theme = "Green", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
 
    DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
 
    ConfigurationSaving = {
-      Enabled = false,
-      FolderName = nil,
+      Enabled = true,
+      FolderName = nil, -- Create a custom folder for your hub/game
       FileName = "Andrey Hub"
    },
 
    Discord = {
-      Enabled = true,
-      Invite = "KkVZEcwN",
-      RememberJoins = true
+      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "KkVZEcwN", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
    },
 
-   KeySystem = false,
+   KeySystem = false, -- Set this to true to use our key system
    KeySettings = {
-      Title = "Aura Keys",
+      Title = "Untitled",
       Subtitle = "Key System",
-      Note = "Para conseguir a key, entre no discord da Aura",
-      FileName = "Key",
-      SaveKey = true,
-      GrabKeyFromSite = false,
-      Key = {"Aura", "Ore", "AuraHub"}
+      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
+      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
    }
 })
 
-local Main = Window:CreateTab("Main", 4483362458)
-local Farm = Window:CreateTab("Farm", 4483362458)
+local Info = Window:CreateTab("Info", 4483362458) -- Title, Image
 
-local SectionMain = Main:CreateSection("Funções Principais")
+local Farm = Window:CreateTab("Farm", 4483362458) -- Title, Image
 
-local function MatarJogador()
-   local player = game.Players.LocalPlayer
-   if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-      player.Character.Humanoid.Health = 0
-   end
-end
+local Configurações = Window:CreateTab("Configurações", 4483362458) -- Title, Image
 
-local ButtonKill = Farm:CreateButton({
-   Name = "Matar Jogador",
-   Callback = MatarJogador
-})
+local Discord = Window:CreateTab("Discord", 4483362458) -- Title, Image
 
-local ToggleFlash = Main:CreateToggle({
-   Name = "Walk Speed",
-   CurrentValue = false,
-   Callback = function(Value)
-      local player = game.Players.LocalPlayer
-      if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-         if Value then
-            player.Character.Humanoid.WalkSpeed = 50
-         else
-            player.Character.Humanoid.WalkSpeed = 16
-         end
-      end
-   end
-})
+local Label = Info:CreateLabel("Vox Seas Andrey Hub", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
 
-local SliderJump = Farm:CreateSlider({
-   Name = "Infinite Jump",
-   Range = {0, 100},
-   Increment = 1,
-   Suffix = "", -- sem '%'
-   CurrentValue = 50,
-   Callback = function(Value)
-      local player = game.Players.LocalPlayer
-      if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-         player.Character.Humanoid.JumpPower = Value
-      end
-   end
-})
-
-local SectionNPC = Farm:CreateSection("NPCs")
-
-local InputNPC = Farm:CreateInput({
-   Name = "Nome do NPC",
-   PlaceholderText = "Digite um NPC...",
-   RemoveTextAfterFocusLost = false,
-   Callback = function(Text)
-      -- aqui você pode adicionar ação para o texto digitado
-   end
-})
-
-local DropdownNPC = Farm:CreateDropdown({
-   Name = "Selecionar NPC",
-   Options = {"Npc 1", "Npc 2", "Npc 3"},
-   CurrentOption = "Npc 1",
-   Callback = function(Option)
-      -- ação para opção selecionada
-   end
-})
+local Label = Farm:CreateLabel("Auto Farm", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
 
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
--- Função para pegar todos os nomes dos jogadores
-local function getPlayerNames()
-    local names = {}
-    for _, plr in ipairs(Players:GetPlayers()) do
-        table.insert(names, plr.Name)
-    end
-    return names
-end
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
 
-local DropdownPlayer -- Referência para atualizar depois
+local killAuraConnection
+local killDistance = 20 -- Distância em studs para matar mobs próximos
 
-DropdownPlayer = Farm:CreateDropdown({
-   Name = "Selecionar Players",
-   Options = getPlayerNames(),
-   CurrentOption = getPlayerNames()[1],
-   MultipleOptions = false,
-   Flag = "Dropdown1",
-   Callback = function(Options)
-      -- Ação ao selecionar jogador
+
+local Toggle = Farm:CreateToggle({
+   Name = "Kill Nearby Mobs",
+   CurrentValue = false,
+   Flag = "Toggle1",
+   Callback = function(Value)
+      if Value then
+         killAuraConnection = RunService.Heartbeat:Connect(function()
+            for _, mob in ipairs(workspace:GetDescendants()) do
+               if mob:IsA("Model") and mob ~= character then
+                  local humanoid = mob:FindFirstChildOfClass("Humanoid")
+                  local mobRoot = mob:FindFirstChild("HumanoidRootPart")
+                  if humanoid and mobRoot and humanoid.Health > 0 then
+                     local distance = (rootPart.Position - mobRoot.Position).Magnitude
+                     if distance <= killDistance then
+                        humanoid.Health = 0 -- Mata o mob
+                     end
+                  end
+               end
+            end
+         end)
+      else
+         if killAuraConnection then
+            killAuraConnection:Disconnect()
+            killAuraConnection = nil
+         end
+      end
    end,
 })
 
--- Atualiza o dropdown quando um jogador entra ou sai
-Players.PlayerAdded:Connect(function()
-    DropdownPlayer:SetOptions(getPlayerNames())
-end)
-Players.PlayerRemoving:Connect(function()
-    DropdownPlayer:SetOptions(getPlayerNames())
-end)
+local bringMobsConnection
 
-local SectionExtra = Farm:CreateSection("Extras")
-
-local KeybindExample = Farm:CreateKeybind({
-   Name = "Atalho de Teclado",
-   CurrentKeybind = "F",
-   HoldToInteract = false,
-   Callback = function(Key)
-      -- ação ao pressionar a tecla
-   end
+local Toggle = Farm:CreateToggle({
+   Name = "Bring Nearby Mobs",
+   CurrentValue = false,
+   Flag = "ToggleBringMobs",
+   Callback = function(Value)
+      if Value then
+         bringMobsConnection = RunService.Heartbeat:Connect(function()
+            for _, mob in ipairs(workspace:GetDescendants()) do
+               if mob:IsA("Model") and mob ~= character then
+                  local humanoid = mob:FindFirstChildOfClass("Humanoid")
+                  local mobRoot = mob:FindFirstChild("HumanoidRootPart")
+                  if humanoid and mobRoot and humanoid.Health > 0 then
+                     local distance = (rootPart.Position - mobRoot.Position).Magnitude
+                     if distance <= killDistance then
+                        mobRoot.CFrame = rootPart.CFrame * CFrame.new(math.random(-3,3), 0, math.random(-3,3))
+                     end
+                  end
+               end
+            end
+         end)
+      else
+         if bringMobsConnection then
+            bringMobsConnection:Disconnect()
+            bringMobsConnection = nil
+         end
+      end
+   end,
 })
 
-local ParagraphCreator = Farm:CreateParagraph({
-   Title = "Criador Andreyjr0250",
-   Content = "Andrey Hub"
+local autoFarmConnection
+
+local Toggle = Farm:CreateToggle({
+   Name = "Auto Farm Level",
+   CurrentValue = false,
+   Flag = "AutoFarmLevelToggle",
+   Callback = function(Value)
+      if Value then
+         autoFarmConnection = RunService.Heartbeat:Connect(function()
+            -- 1. Procurar o NPC de missão mais próximo
+            local nearestQuestNPC, nearestDist
+            for _, npc in ipairs(workspace:GetDescendants()) do
+               if npc:IsA("Model") and npc:FindFirstChild("QuestGiver") then -- Ajuste "QuestGiver" para o nome correto do objeto identificador do NPC de missão
+                  local npcRoot = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("Head")
+                  if npcRoot then
+                     local dist = (rootPart.Position - npcRoot.Position).Magnitude
+                     if not nearestDist or dist < nearestDist then
+                        nearestQuestNPC = npc
+                        nearestDist = dist
+                     end
+                  end
+               end
+            end
+
+            -- 2. Se achou um NPC de missão, pegar a missão (simular toque)
+            if nearestQuestNPC and nearestDist and nearestDist < 30 then -- 30 studs de distância para pegar missão
+               local npcRoot = nearestQuestNPC:FindFirstChild("HumanoidRootPart") or nearestQuestNPC:FindFirstChild("Head")
+               if npcRoot then
+                  firetouchinterest(rootPart, npcRoot, 0)
+                  wait(0.2)
+                  firetouchinterest(rootPart, npcRoot, 1)
+               end
+            end
+
+            -- 3. Procurar e matar mobs da missão (ajuste o nome do mob se necessário)
+            for _, mob in ipairs(workspace:GetDescendants()) do
+               if mob:IsA("Model") and mob ~= character then
+                  local humanoid = mob:FindFirstChildOfClass("Humanoid")
+                  local mobRoot = mob:FindFirstChild("HumanoidRootPart")
+                  if humanoid and mobRoot and humanoid.Health > 0 then
+                     local distance = (rootPart.Position - mobRoot.Position).Magnitude
+                     if distance <= 30 then -- Distância para matar o mob
+                        humanoid.Health = 0
+                     end
+                  end
+               end
+            end
+         end)
+      else
+         if autoFarmConnection then
+            autoFarmConnection:Disconnect()
+            autoFarmConnection = nil
+         end
+      end
+   end,
 })
 
-Rayfield:LoadConfiguration()
+local Label = Farm:CreateLabel("Game", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
+
+local infiniteJumpEnabled = false
+local infiniteJumpConnection
+
+local Toggle = Configurações:CreateToggle({
+   Name = "Infinite Jump",
+   CurrentValue = false,
+   Flag = "InfiniteJumpToggle",
+   Callback = function(Value)
+      infiniteJumpEnabled = Value
+      if infiniteJumpEnabled then
+         infiniteJumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+               humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+         end)
+      else
+         if infiniteJumpConnection then
+            infiniteJumpConnection:Disconnect()
+            infiniteJumpConnection = nil
+         end
+      end
+   end,
+})
+
+local walkSpeedValue = 16
+local walkSpeedEnabled = false
+local walkSpeedConnection
+
+local Slider = Configurações:CreateSlider({
+   Name = "WalkSpeed",
+   Range = {16, 100},
+   Increment = 1,
+   Suffix = "Velocidade",
+   CurrentValue = 16,
+   Flag = "WalkSpeedSlider",
+   Callback = function(Value)
+      walkSpeedValue = Value
+      if walkSpeedEnabled and player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+         player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = walkSpeedValue
+      end
+   end,
+})
+
+local Toggle = Configurações:CreateToggle({
+   Name = "Ativar WalkSpeed",
+   CurrentValue = false,
+   Flag = "WalkSpeedToggle",
+   Callback = function(Value)
+      walkSpeedEnabled = Value
+      if walkSpeedEnabled then
+         local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+         if humanoid then
+            humanoid.WalkSpeed = walkSpeedValue
+         end
+         walkSpeedConnection = player.CharacterAdded:Connect(function(char)
+            local hum = char:WaitForChild("Humanoid")
+            hum.WalkSpeed = walkSpeedValue
+         end)
+      else
+         local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+         if humanoid then
+            humanoid.WalkSpeed = 16
+         end
+         if walkSpeedConnection then
+            walkSpeedConnection:Disconnect()
+            walkSpeedConnection = nil
+         end
+      end
+   end,
+})
+
+local Label = Discord:CreateLabel("Entre No Nosso Discord Para Pegar as Atualizações", 4483362458, Color3.fromRGB(114, 137, 218), false)
+
+local Label = Discord:CreateLabel("https://discord.gg/KkVZEcwN", 4483362458, Color3.fromRGB(114, 137, 218), false)
