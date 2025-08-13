@@ -1,0 +1,152 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = " Vox Seas Andrey Hub",
+   Icon = nil, -- ou assetId válido em string
+   LoadingTitle = "Andrey Hub",
+   LoadingSubtitle = "Criado Por Andreyjr0250",
+   Theme = "Green",
+   ToggleUIKeybind = "K",
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+
+   ConfigurationSaving = {
+      Enabled = false,
+      FolderName = nil,
+      FileName = "Andrey Hub"
+   },
+
+   Discord = {
+      Enabled = true,
+      Invite = "KkVZEcwN",
+      RememberJoins = true
+   },
+
+   KeySystem = false,
+   KeySettings = {
+      Title = "Aura Keys",
+      Subtitle = "Key System",
+      Note = "Para conseguir a key, entre no discord da Aura",
+      FileName = "Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"Aura", "Ore", "AuraHub"}
+   }
+})
+
+local Main = Window:CreateTab("Main", 4483362458)
+local Farm = Window:CreateTab("Farm", 4483362458)
+
+local SectionMain = Main:CreateSection("Funções Principais")
+
+local function MatarJogador()
+   local player = game.Players.LocalPlayer
+   if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+      player.Character.Humanoid.Health = 0
+   end
+end
+
+local ButtonKill = Farm:CreateButton({
+   Name = "Matar Jogador",
+   Callback = MatarJogador
+})
+
+local ToggleFlash = Main:CreateToggle({
+   Name = "Walk Speed",
+   CurrentValue = false,
+   Callback = function(Value)
+      local player = game.Players.LocalPlayer
+      if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+         if Value then
+            player.Character.Humanoid.WalkSpeed = 50
+         else
+            player.Character.Humanoid.WalkSpeed = 16
+         end
+      end
+   end
+})
+
+local SliderJump = Farm:CreateSlider({
+   Name = "Infinite Jump",
+   Range = {0, 100},
+   Increment = 1,
+   Suffix = "", -- sem '%'
+   CurrentValue = 50,
+   Callback = function(Value)
+      local player = game.Players.LocalPlayer
+      if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+         player.Character.Humanoid.JumpPower = Value
+      end
+   end
+})
+
+local SectionNPC = Farm:CreateSection("NPCs")
+
+local InputNPC = Farm:CreateInput({
+   Name = "Nome do NPC",
+   PlaceholderText = "Digite um NPC...",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+      -- aqui você pode adicionar ação para o texto digitado
+   end
+})
+
+local DropdownNPC = Farm:CreateDropdown({
+   Name = "Selecionar NPC",
+   Options = {"Npc 1", "Npc 2", "Npc 3"},
+   CurrentOption = "Npc 1",
+   Callback = function(Option)
+      -- ação para opção selecionada
+   end
+})
+
+local Players = game:GetService("Players")
+
+-- Função para pegar todos os nomes dos jogadores
+local function getPlayerNames()
+    local names = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        table.insert(names, plr.Name)
+    end
+    return names
+end
+
+local DropdownPlayer -- Referência para atualizar depois
+
+DropdownPlayer = Farm:CreateDropdown({
+   Name = "Selecionar Players",
+   Options = getPlayerNames(),
+   CurrentOption = getPlayerNames()[1],
+   MultipleOptions = false,
+   Flag = "Dropdown1",
+   Callback = function(Options)
+      -- Ação ao selecionar jogador
+   end,
+})
+
+-- Atualiza o dropdown quando um jogador entra ou sai
+Players.PlayerAdded:Connect(function()
+    DropdownPlayer:SetOptions(getPlayerNames())
+end)
+Players.PlayerRemoving:Connect(function()
+    DropdownPlayer:SetOptions(getPlayerNames())
+end)
+
+local SectionExtra = Farm:CreateSection("Extras")
+
+local KeybindExample = Farm:CreateKeybind({
+   Name = "Atalho de Teclado",
+   CurrentKeybind = "F",
+   HoldToInteract = false,
+   Callback = function(Key)
+      -- ação ao pressionar a tecla
+   end
+})
+
+local ParagraphCreator = Farm:CreateParagraph({
+   Title = "Criador Andreyjr0250",
+   Content = "Andrey Hub"
+})
+
+Rayfield:LoadConfiguration()
