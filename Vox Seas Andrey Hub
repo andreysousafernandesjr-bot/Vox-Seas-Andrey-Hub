@@ -1,3 +1,25 @@
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+local killAuraConnection
+local killDistance = 20 -- Distância em studs para matar mobs próximos
+
+local infiniteJumpEnabled = false
+local infiniteJumpConnection
+
+local infiniteJumpEnabled = false
+local infiniteJumpConnection
+
+local walkSpeedValue = 16
+local walkSpeedEnabled = false
+local walkSpeedConnection
+
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
@@ -48,17 +70,6 @@ local discordtab = Window:CreateTab("DiscordTab", 4483362458) -- Title, Image
 local Label = Info:CreateLabel("Vox Seas Andrey Hub", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
 
 local Label = Farm:CreateLabel("Auto Farm", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local rootPart = character:WaitForChild("HumanoidRootPart")
-
-local killAuraConnection
-local killDistance = 20 -- Distância em studs para matar mobs próximos
-
 
 local Toggle = Farm:CreateToggle({
    Name = "Kill Nearby Mobs",
@@ -179,9 +190,6 @@ local Toggle = Farm:CreateToggle({
 
 local Label = Farm:CreateLabel("Game", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
 
-local infiniteJumpEnabled = false
-local infiniteJumpConnection
-
 local Toggle = Configurações:CreateToggle({
    Name = "Infinite Jump",
    CurrentValue = false,
@@ -203,10 +211,6 @@ local Toggle = Configurações:CreateToggle({
       end
    end,
 })
-
-local walkSpeedValue = 16
-local walkSpeedEnabled = false
-local walkSpeedConnection
 
 local Slider = Configurações:CreateSlider({
    Name = "WalkSpeed",
