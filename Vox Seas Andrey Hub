@@ -37,13 +37,13 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
-local Info = Window:CreateTab("Info", 4483362458) -- Title, Image
+local infotab = Window:CreateTab("InfoTab", 4483362458) -- Title, Image
 
-local Farm = Window:CreateTab("Farm", 4483362458) -- Title, Image
+local farmtab = Window:CreateTab("FarmTab", 4483362458) -- Title, Image
 
-local Configurações = Window:CreateTab("Configurações", 4483362458) -- Title, Image
+local configuraçõestab = Window:CreateTab("ConfiguraçõesTab", 4483362458) -- Title, Image
 
-local Discord = Window:CreateTab("Discord", 4483362458) -- Title, Image
+local discordtab = Window:CreateTab("DiscordTab", 4483362458) -- Title, Image
 
 local Label = Info:CreateLabel("Vox Seas Andrey Hub", 4483362458, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
 
